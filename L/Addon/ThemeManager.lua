@@ -1,3 +1,4 @@
+-- Xynbol ThemeManager
 local cloneref = (cloneref or clonereference or function(instance: any)
     return instance
 end)
@@ -48,13 +49,13 @@ if typeof(clonefunction) == "function" then
 end
 
 local ThemeManager = {} do
-	local ThemeFields = { "FontColor", "MainColor", "AccentColor", "BackgroundColor", "OutlineColor", "VideoLink" }
+	local ThemeFields = { "FontColor", "MainColor", "AccentColor", "BackgroundColor", "OutlineColor", "VideoLink", "Font" }
 	ThemeManager.Folder = "LinoriaLibSettings"
 	-- if not isfolder(ThemeManager.Folder) then makefolder(ThemeManager.Folder) end
 
 	ThemeManager.Library = nil
 	ThemeManager.BuiltInThemes = {
-		['Default']       = { 1, { FontColor = "ffffff", MainColor = "1a1111", AccentColor = "801726", BackgroundColor = "120b0b", OutlineColor = "361e20" } },
+		['Default']       = { 1, { FontColor = "ffffff", MainColor = "1a1111", AccentColor = "801726", BackgroundColor = "120b0b", OutlineColor = "361e20", Font = "Code" } },
 		['BBot']          = { 2, { FontColor = "ffffff", MainColor = "1e1e1e", AccentColor = "7e48a3", BackgroundColor = "232323", OutlineColor = "141414" } },
 		['Fatality']      = { 3, { FontColor = "ffffff", MainColor = "1e1842", AccentColor = "c50754", BackgroundColor = "191335", OutlineColor = "3c355d" } },
 		['Jester']        = { 4, { FontColor = "ffffff", MainColor = "242424", AccentColor = "db4467", BackgroundColor = "1c1c1c", OutlineColor = "373737" } },
@@ -155,14 +156,23 @@ local ThemeManager = {} do
 		
 		local scheme = data[2]
 		for idx, col in next, customThemeData or scheme do
-			if idx == "VideoLink" then
-				self.Library[idx] = col
+			if idx == "VideoLink" or idx == "Font" then
+				if idx == "Font" then
+					local success, fontEnum = pcall(function() return Enum.Font[col] end)
+					if success and fontEnum then
+						self.Library[idx] = fontEnum
+					end
+				else
+					self.Library[idx] = col
+				end
 				
 				if self.Library.Options[idx] then
 					self.Library.Options[idx]:SetValue(col)
 				end
 				
-				ApplyBackgroundVideo(col)
+				if idx == "VideoLink" then
+					ApplyBackgroundVideo(col)
+				end
 			else
 				self.Library[idx] = Color3.fromHex(col)
 				
@@ -183,7 +193,14 @@ local ThemeManager = {} do
 
 		for i, field in next, ThemeFields do
 			if self.Library.Options and self.Library.Options[field] then
-				self.Library[field] = self.Library.Options[field].Value
+				if field == "Font" then
+					local success, fontEnum = pcall(function() return Enum.Font[self.Library.Options[field].Value] end)
+					if success and fontEnum then
+						self.Library[field] = fontEnum
+					end
+				else
+					self.Library[field] = self.Library.Options[field].Value
+				end
 
 				if field == "VideoLink" then
 					ApplyBackgroundVideo(self.Library.Options[field].Value)
@@ -247,7 +264,7 @@ local ThemeManager = {} do
 
 		local theme = {}
 		for _, field in next, ThemeFields do
-			if field == "VideoLink" then
+			if field == "VideoLink" or field == "Font" then
 				theme[field] = self.Library.Options[field].Value
 			else
 				theme[field] = self.Library.Options[field].Value:ToHex()
@@ -305,6 +322,7 @@ local ThemeManager = {} do
 		groupbox:AddLabel('Accent color'):AddColorPicker('AccentColor', { Default = self.Library.AccentColor });
 		groupbox:AddLabel('Outline color'):AddColorPicker('OutlineColor', { Default = self.Library.OutlineColor });
 		groupbox:AddLabel('Font color')	:AddColorPicker('FontColor', { Default = self.Library.FontColor });
+		groupbox:AddDropdown('Font', { Text = 'Font', Values = {"Code", "Gotham", "GothamBold", "SciFi", "Arcade", "Bodoni", "Arial"}, Default = 1 });
 		groupbox:AddInput('VideoLink', { Text = '.webm Video Background (Link)', Default = self.Library.VideoLink });
 		
 		local ThemesArray = {}
@@ -401,6 +419,9 @@ local ThemeManager = {} do
 		self.Library.Options.AccentColor:OnChanged(UpdateTheme)
 		self.Library.Options.OutlineColor:OnChanged(UpdateTheme)
 		self.Library.Options.FontColor:OnChanged(UpdateTheme)
+		if self.Library.Options.Font then
+			self.Library.Options.Font:OnChanged(UpdateTheme)
+		end
 	end
 
 	function ThemeManager:CreateGroupBox(tab)
