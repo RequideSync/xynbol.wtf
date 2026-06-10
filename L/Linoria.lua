@@ -1,3 +1,4 @@
+-- Xynbol UI library.lua
 local cloneref = (cloneref or clonereference or function(instance: any)
 	return instance
 end)
@@ -6544,7 +6545,7 @@ function Library:CreateWindow(...)
     end
 
     if WindowInfo.Size == UDim2.fromOffset(0, 0) then
-        WindowInfo.Size = if Library.IsMobile then UDim2.fromOffset(550, math.clamp(ViewportSize.Y - 35, 200, 600)) else UDim2.fromOffset(550, 600)
+        WindowInfo.Size = if Library.IsMobile then UDim2.fromOffset(700, math.clamp(ViewportSize.Y - 35, 200, 450)) else UDim2.fromOffset(700, 450)
     end
 
     Library.NotifySide = WindowInfo.NotifySide
@@ -6674,8 +6675,8 @@ function Library:CreateWindow(...)
     local MainSectionOuter = Library:Create("Frame", {
         BackgroundColor3 = Library.BackgroundColor;
         BorderColor3 = Library.OutlineColor;
-        Position = UDim2.new(0, 8, 0, 25);
-        Size = UDim2.new(1, -16, 1, -58);
+        Position = UDim2.new(0, 8, 0, 26);
+        Size = UDim2.new(1, -16, 1, -59);
         ZIndex = 1;
         Parent = Inner;
     })
