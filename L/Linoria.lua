@@ -1,4 +1,4 @@
--- Xynbol UI library.lua
+-- XynBol Linoria V2.3.1
 local cloneref = (cloneref or clonereference or function(instance: any)
 	return instance
 end)
@@ -550,6 +550,7 @@ function Library:CreateLabel(Properties, IsHud)
 
     Library:AddToRegistry(_Instance, {
         TextColor3 = "FontColor";
+        Font = "Font";
     }, IsHud)
 
     return Library:Create(_Instance, Properties)
@@ -1136,7 +1137,9 @@ local Templates = { -- TO-DO: do it for missing elements.
         UnlockMouseWhileOpen = true,
         Center = false,
         TitlePos = "Left",
-        BottomText = ""
+        TitleTextSize = 16,
+        BottomText = "",
+        BottomTextSize = 16
     },
 
     --// Elements \\--
@@ -1152,6 +1155,13 @@ local Templates = { -- TO-DO: do it for missing elements.
         Instance = nil,
         Height = 24,
         Visible = true,
+    },
+    ESPPreview = {
+        Instance = nil,
+        Size = UDim2.fromOffset(200, 300),
+        Position = UDim2.fromOffset(200, 200),
+        Attached = true,
+        Visible = true
     }
 }
 
@@ -6637,6 +6647,7 @@ function Library:CreateWindow(...)
         Size = titleSize;
         Text = WindowInfo.Title or "";
         TextXAlignment = titleAlign;
+        TextSize = WindowInfo.TitleTextSize or 16;
         ZIndex = 2;
         Parent = Inner;
     })
@@ -6668,6 +6679,7 @@ function Library:CreateWindow(...)
         Size = titleSize == UDim2.new(0, 0, 0, 25) and UDim2.new(1, -14, 0, 25) or titleSize;
         Text = WindowInfo.BottomText or "";
         TextXAlignment = titleAlign;
+        TextSize = WindowInfo.BottomTextSize or 16;
         ZIndex = 2;
         Parent = Inner;
     })
@@ -8269,6 +8281,117 @@ end
     Library.Window = Window
 
     return Window
+end
+
+function Library:AddESPPreview(Info)
+    local Info = Library:Validate(Info, Templates.ESPPreview)
+
+    assert(Info.Instance, "Instance must be provided.")
+
+    local ESPOuter = Library:Create("Frame", {
+        BackgroundColor3 = Color3.new(0, 0, 0);
+        BorderSizePixel = 0;
+        Position = Info.Attached and UDim2.new(1, 10, 0, 0) or Info.Position; 
+        Size = Info.Size;
+        Visible = Info.Visible;
+        ZIndex = 1;
+        Parent = Info.Attached and LibraryMainOuterFrame or ScreenGui;
+        Name = "ESPPreviewWindow";
+    })
+
+    if not Info.Attached then
+        Library:MakeDraggable(ESPOuter, 20)
+    end
+
+    local ESPInner = Library:Create("Frame", {
+        BackgroundColor3 = Library.MainColor;
+        BorderColor3 = Library.AccentColor;
+        BorderMode = Enum.BorderMode.Inset;
+        Position = UDim2.new(0, 1, 0, 1);
+        Size = UDim2.new(1, -2, 1, -2);
+        ZIndex = 1;
+        Parent = ESPOuter;
+    })
+
+    local InnerGradient = Library:Create("UIGradient", {
+        Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(200, 200, 200)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 100, 100))
+        });
+        Rotation = 90;
+        Parent = ESPInner;
+    })
+
+    Library:AddToRegistry(ESPInner, {
+        BackgroundColor3 = "MainColor";
+        BorderColor3 = "AccentColor";
+    })
+
+    local TitleBarGradFrame = Library:Create("Frame", {
+        BackgroundColor3 = Library.AccentColor;
+        BorderSizePixel = 0;
+        Position = UDim2.new(0, 0, 0, 0);
+        Size = UDim2.new(1, 0, 0, 20);
+        ZIndex = 1;
+        Parent = ESPInner;
+    })
+    
+    local TitleBarGradient = Library:Create("UIGradient", {
+        Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(150, 150, 150))
+        });
+        Rotation = 90;
+        Parent = TitleBarGradFrame;
+    })
+
+    Library:AddToRegistry(TitleBarGradFrame, {
+        BackgroundColor3 = "AccentColor";
+    })
+
+    local WindowLabel = Library:CreateLabel({
+        Position = UDim2.new(0, 0, 0, 0);
+        Size = UDim2.new(1, 0, 0, 20);
+        Text = "ESP Preview";
+        TextXAlignment = Enum.TextXAlignment.Center;
+        TextSize = 14;
+        ZIndex = 2;
+        Parent = ESPInner;
+    })
+
+    local MainSectionOuter = Library:Create("Frame", {
+        BackgroundColor3 = Library.BackgroundColor;
+        BorderColor3 = Library.OutlineColor;
+        Position = UDim2.new(0, 4, 0, 24);
+        Size = UDim2.new(1, -8, 1, -28);
+        ZIndex = 1;
+        Parent = ESPInner;
+    })
+
+    Library:AddToRegistry(MainSectionOuter, {
+        BackgroundColor3 = "BackgroundColor";
+        BorderColor3 = "OutlineColor";
+    })
+
+    local MainSectionInner = Library:Create("Frame", {
+        BackgroundColor3 = Library.BackgroundColor;
+        BorderColor3 = Color3.new(0, 0, 0);
+        BorderMode = Enum.BorderMode.Inset;
+        Position = UDim2.new(0, 0, 0, 0);
+        Size = UDim2.new(1, 0, 1, 0);
+        ZIndex = 1;
+        Parent = MainSectionOuter;
+    })
+
+    Library:AddToRegistry(MainSectionInner, {
+        BackgroundColor3 = "BackgroundColor";
+    })
+
+    Info.Instance.Parent = MainSectionInner
+    Info.Instance.Size = UDim2.new(1, 0, 1, 0)
+    Info.Instance.Position = UDim2.new(0, 0, 0, 0)
+
+    return ESPOuter
 end
 
 local function OnPlayerChange()
