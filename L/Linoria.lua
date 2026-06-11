@@ -1,4 +1,4 @@
--- XynBol Linoria V2.3.1
+-- Xynbol.dz
 local cloneref = (cloneref or clonereference or function(instance: any)
 	return instance
 end)
@@ -560,6 +560,7 @@ function Library:MakeDraggable(Instance, Cutoff, IsMainWindow)
     Instance.Active = true
 
     if Library.IsMobile == false then
+        local Dragging = false
         Instance.InputBegan:Connect(function(Input)
             if Input.UserInputType == Enum.UserInputType.MouseButton1 then
                 if IsMainWindow == true and Library.CantDragForced == true then
@@ -575,6 +576,9 @@ function Library:MakeDraggable(Instance, Cutoff, IsMainWindow)
                     return
                 end
 
+                if Dragging then return end
+                Dragging = true
+
                 while InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
                     Instance.Position = UDim2.new(
                         0,
@@ -585,6 +589,8 @@ function Library:MakeDraggable(Instance, Cutoff, IsMainWindow)
 
                     RunService.RenderStepped:Wait()
                 end
+
+                Dragging = false
             end
         end)
     else
@@ -639,6 +645,7 @@ function Library:MakeDraggableUsingParent(Instance, Parent, Cutoff, IsMainWindow
     Instance.Active = true
 
     if Library.IsMobile == false then
+        local Dragging = false
         Instance.InputBegan:Connect(function(Input)
             if Input.UserInputType == Enum.UserInputType.MouseButton1 then
                 if IsMainWindow == true and Library.CantDragForced == true then
@@ -654,6 +661,9 @@ function Library:MakeDraggableUsingParent(Instance, Parent, Cutoff, IsMainWindow
                     return
                 end
 
+                if Dragging then return end
+                Dragging = true
+
                 while InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
                     Parent.Position = UDim2.new(
                         0,
@@ -664,6 +674,8 @@ function Library:MakeDraggableUsingParent(Instance, Parent, Cutoff, IsMainWindow
 
                     RunService.RenderStepped:Wait()
                 end
+
+                Dragging = false
             end
         end)
     else  
