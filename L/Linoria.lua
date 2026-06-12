@@ -1,4 +1,3 @@
--- Xynbol.dz
 local cloneref = (cloneref or clonereference or function(instance: any)
 	return instance
 end)
@@ -7503,8 +7502,23 @@ do
             Parent = TabFrame;
         })
 
+        local CenterSide = Library:Create("ScrollingFrame", {
+            BackgroundTransparency = 1;
+            BorderSizePixel = 0;
+            Position = UDim2.new(0, 7, 0, 7);
+            Size = UDim2.new(1, -14, 1, -14);
+            CanvasSize = UDim2.new(0, 0, 0, 0);
+            BottomImage = "";
+            TopImage = "";
+            ScrollBarThickness = 0;
+            ZIndex = 2;
+            Parent = TabFrame;
+            Visible = false;
+        })
+
         Tab.LeftSideFrame = LeftSide
         Tab.RightSideFrame = RightSide
+        Tab.CenterSideFrame = CenterSide
 
         Library:Create("UIListLayout", {
             Padding = UDim.new(0, 8);
@@ -7522,10 +7536,19 @@ do
             Parent = RightSide;
         })
 
+        Library:Create("UIListLayout", {
+            Padding = UDim.new(0, 8);
+            FillDirection = Enum.FillDirection.Vertical;
+            SortOrder = Enum.SortOrder.LayoutOrder;
+            HorizontalAlignment = Enum.HorizontalAlignment.Center;
+            Parent = CenterSide;
+        })
+
         if Library.IsMobile then
             local SidesValues = {
                 ["Left"] = tick(),
                 ["Right"] = tick(),
+                ["Center"] = tick(),
             }
 
             LeftSide:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
@@ -7551,9 +7574,21 @@ do
                     Library.CanDrag = true
                 end
             end)
+
+            CenterSide:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
+                Library.CanDrag = false
+
+                local ChangeTick = tick()
+                SidesValues.Center = ChangeTick
+                task.wait(0.15)
+                
+                if SidesValues.Center == ChangeTick then
+                    Library.CanDrag = true
+                end
+            end)
         end
 
-        for _, Side in next, { LeftSide, RightSide } do
+        for _, Side in next, { LeftSide, RightSide, CenterSide } do
             Side:WaitForChild("UIListLayout"):GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
                 Side.CanvasSize = UDim2.fromOffset(0, Side.UIListLayout.AbsoluteContentSize.Y)
             end)
@@ -7583,12 +7618,18 @@ do
             
                     RightSide.Position = UDim2.new(0.5, 5, 0, 7 + Size)
                     RightSide.Size = UDim2.new(0.5, -10, 1, -14 - Size)
+
+                    CenterSide.Position = UDim2.new(0, 7, 0, 7 + Size)
+                    CenterSide.Size = UDim2.new(1, -14, 1, -14 - Size)
                 else
                     LeftSide.Position = UDim2.new(0, 7, 0, 7)
                     LeftSide.Size = UDim2.new(0.5, -10, 1, -14 - Size)
             
                     RightSide.Position = UDim2.new(0.5, 5, 0, 7)
                     RightSide.Size = UDim2.new(0.5, -10, 1, -14 - Size)
+
+                    CenterSide.Position = UDim2.new(0, 7, 0, 7)
+                    CenterSide.Size = UDim2.new(1, -14, 1, -14 - Size)
                 end
             else
                 LeftSide.Position = UDim2.new(0, 7, 0, 7)
@@ -7596,6 +7637,9 @@ do
         
                 RightSide.Position = UDim2.new(0.5, 5, 0, 7)
                 RightSide.Size = UDim2.new(0.5, -10, 1, -14)
+
+                CenterSide.Position = UDim2.new(0, 7, 0, 7)
+                CenterSide.Size = UDim2.new(1, -14, 1, -14)
             end
         end
 
@@ -7771,6 +7815,1445 @@ end
             Tab.Groupboxes[Info.Name] = Groupbox
 
             return Groupbox
+        end
+
+        function Tab:AddRightGroupbox(Name)
+            return Tab:AddGroupbox({ Side = 2; Name = Name; })
+        end
+
+        function Tab:AddCenterGroup(Info)
+            LeftSide.Visible = false
+            RightSide.Visible = false
+            CenterSide.Visible = true
+
+            local CenterGroup = {
+                Category = {},
+                Tab = Tab,
+            }
+
+            local BoxOuter = Library:Create("Frame", {
+                BackgroundColor3 = Library.BackgroundColor;
+                BorderColor3 = Library.OutlineColor;
+                BorderMode = Enum.BorderMode.Inset;
+                Size = UDim2.new(1, 0, 0, 507 + 2);
+                ZIndex = 2;
+                Parent = CenterSide;
+            })
+
+            Library:AddToRegistry(BoxOuter, {
+                BackgroundColor3 = "BackgroundColor";
+                BorderColor3 = "OutlineColor";
+            })
+
+            local BoxInner = Library:Create("Frame", {
+                BackgroundColor3 = Library.BackgroundColor;
+                BorderColor3 = Color3.new(0, 0, 0);
+                Size = UDim2.new(1, -2, 1, -2);
+                Position = UDim2.new(0, 1, 0, 1);
+                ZIndex = 4;
+                Parent = BoxOuter;
+            })
+
+            Library:AddToRegistry(BoxInner, {
+                BackgroundColor3 = "BackgroundColor";
+            })
+
+            local Highlight = Library:Create("Frame", {
+                BackgroundColor3 = Library.AccentColor;
+                BorderSizePixel = 0;
+                Size = UDim2.new(1, 0, 0, 2);
+                ZIndex = 5;
+                Parent = BoxInner;
+            })
+
+            Library:AddToRegistry(Highlight, {
+                BackgroundColor3 = "AccentColor";
+            })
+
+            local Container = Library:Create("Frame", {
+                BackgroundTransparency = 1;
+                Position = UDim2.new(0, 8, 0, 10);
+                Size = UDim2.new(1, -16, 1, -10);
+                ZIndex = 1;
+                Parent = BoxInner;
+            })
+
+            Library:Create("UIListLayout", {
+                FillDirection = Enum.FillDirection.Vertical;
+                SortOrder = Enum.SortOrder.LayoutOrder;
+                Padding = UDim.new(0, 6);
+                Parent = Container;
+            })
+
+            local DropdownValues = {}
+            for CatName, _ in pairs(Info.Category or {}) do
+                table.insert(DropdownValues, CatName)
+            end
+            table.sort(DropdownValues)
+
+            local DropdownOuter = Library:Create("Frame", {
+                BackgroundColor3 = Color3.new(0, 0, 0);
+                BorderColor3 = Library.OutlineColor;
+                Size = UDim2.new(1, 0, 0, 24);
+                ZIndex = 5;
+                Parent = Container;
+            })
+
+            Library:AddToRegistry(DropdownOuter, {
+                BorderColor3 = "OutlineColor";
+            })
+
+            local DropdownInner = Library:Create("Frame", {
+                BackgroundColor3 = Library.MainColor;
+                BorderColor3 = Library.OutlineColor;
+                BorderMode = Enum.BorderMode.Inset;
+                Size = UDim2.new(1, 0, 1, 0);
+                ZIndex = 6;
+                Parent = DropdownOuter;
+            })
+
+            Library:AddToRegistry(DropdownInner, {
+                BackgroundColor3 = "MainColor";
+                BorderColor3 = "OutlineColor";
+            })
+
+            local DropdownArrow = Library:Create("ImageLabel", {
+                AnchorPoint = Vector2.new(0, 0.5);
+                BackgroundTransparency = 1;
+                Position = UDim2.new(1, -20, 0.5, 0);
+                Size = UDim2.new(0, 12, 0, 12);
+                Image = CustomImageManager.GetAsset("DropdownArrow");
+                ZIndex = 8;
+                Parent = DropdownInner;
+            })
+
+            local DisplayLabel = Library:CreateLabel({
+                Position = UDim2.new(0, 10, 0, 0);
+                Size = UDim2.new(1, -30, 1, 0);
+                TextSize = 14;
+                Text = DropdownValues[1] or "None";
+                TextXAlignment = Enum.TextXAlignment.Left;
+                RichText = true;
+                ZIndex = 7;
+                Parent = DropdownInner;
+            })
+
+            local SearchBarOuter = Library:Create("Frame", {
+                BackgroundColor3 = Color3.new(0, 0, 0);
+                BorderColor3 = Library.OutlineColor;
+                Size = UDim2.new(1, 0, 0, 24);
+                ZIndex = 5;
+                Parent = Container;
+                Visible = false;
+            })
+
+            Library:AddToRegistry(SearchBarOuter, {
+                BorderColor3 = "OutlineColor";
+            })
+
+            local SearchBarInner = Library:Create("Frame", {
+                BackgroundColor3 = Library.MainColor;
+                BorderColor3 = Library.OutlineColor;
+                BorderMode = Enum.BorderMode.Inset;
+                Size = UDim2.new(1, 0, 1, 0);
+                ZIndex = 6;
+                Parent = SearchBarOuter;
+            })
+
+            Library:AddToRegistry(SearchBarInner, {
+                BackgroundColor3 = "MainColor";
+                BorderColor3 = "OutlineColor";
+            })
+
+            local SearchBox = Library:Create("TextBox", {
+                BackgroundTransparency = 1;
+                Position = UDim2.new(0, 10, 0, 0);
+                Size = UDim2.new(1, -20, 1, 0);
+                Font = Library.Font;
+                PlaceholderColor3 = Color3.fromRGB(150, 150, 150);
+                PlaceholderText = "Search skins...";
+                Text = "";
+                TextColor3 = Library.FontColor;
+                TextSize = 14;
+                TextXAlignment = Enum.TextXAlignment.Left;
+                ZIndex = 7;
+                Parent = SearchBarInner;
+            })
+
+            Library:AddToRegistry(SearchBox, {
+                TextColor3 = "FontColor";
+            })
+
+            local ActiveCategoryName = DropdownValues[1]
+
+            for CatName, CatInfo in pairs(Info.Category or {}) do
+                local CategoryObj = {
+                    Name = CatName,
+                    Items = {},
+                    Buttons = {},
+                    Visible = true,
+                }
+
+                local CatContainer = Library:Create("Frame", {
+                    BackgroundTransparency = 1;
+                    Size = UDim2.new(1, 0, 0, 0);
+                    ZIndex = 5;
+                    Visible = (CatName == ActiveCategoryName);
+                    Parent = Container;
+                })
+
+                local CatList = Library:Create("UIListLayout", {
+                    FillDirection = Enum.FillDirection.Vertical;
+                    SortOrder = Enum.SortOrder.LayoutOrder;
+                    Padding = UDim.new(0, 6);
+                    Parent = CatContainer;
+                })
+
+                local GridContainer = Library:Create("Frame", {
+                    BackgroundTransparency = 1;
+                    Size = UDim2.new(1, 0, 0, 0);
+                    ZIndex = 5;
+                    Parent = CatContainer;
+                })
+
+                local Grid = Library:Create("UIGridLayout", {
+                    CellSize = UDim2.fromOffset(50, 50);
+                    CellPadding = UDim2.fromOffset(6, 6);
+                    SortOrder = Enum.SortOrder.LayoutOrder;
+                    Parent = GridContainer;
+                })
+
+                Grid:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+                    GridContainer.Size = UDim2.new(1, 0, 0, Grid.AbsoluteContentSize.Y)
+                end)
+
+                local BottomButtonsContainer = Library:Create("Frame", {
+                    BackgroundTransparency = 1;
+                    Size = UDim2.new(1, 0, 0, 0);
+                    ZIndex = 5;
+                    Parent = CatContainer;
+                })
+
+                local BottomList = Library:Create("UIListLayout", {
+                    FillDirection = Enum.FillDirection.Vertical;
+                    SortOrder = Enum.SortOrder.LayoutOrder;
+                    Padding = UDim.new(0, 4);
+                    Parent = BottomButtonsContainer;
+                })
+
+                BottomList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+                    BottomButtonsContainer.Size = UDim2.new(1, 0, 0, BottomList.AbsoluteContentSize.Y)
+                end)
+
+                function CategoryObj:AddMiniVIewPortButton(ItemInfo)
+                    local Item = {
+                        Type = "MiniVIewPortButton",
+                        Visible = true,
+                        Selected = false,
+                        Callback = ItemInfo.Callback,
+                    }
+
+                    local Size = ItemInfo.Size or UDim2.fromOffset(50, 50)
+                    local ButtonOuter = Library:Create("Frame", {
+                        BackgroundColor3 = Color3.new(0, 0, 0);
+                        BorderColor3 = Library.OutlineColor;
+                        Size = Size;
+                        ZIndex = 6;
+                        Parent = GridContainer;
+                    })
+
+                    Library:AddToRegistry(ButtonOuter, {
+                        BorderColor3 = "OutlineColor";
+                    })
+
+                    local ButtonInner = Library:Create("Frame", {
+                        BackgroundColor3 = Library.MainColor;
+                        BorderColor3 = Color3.new(0, 0, 0);
+                        Size = UDim2.new(1, -2, 1, -2);
+                        Position = UDim2.new(0, 1, 0, 1);
+                        ZIndex = 7;
+                        Parent = ButtonOuter;
+                    })
+
+                    Library:AddToRegistry(ButtonInner, {
+                        BackgroundColor3 = "MainColor";
+                    })
+
+                    local ViewportFrame = Library:Create("ViewportFrame", {
+                        BackgroundTransparency = 1;
+                        Size = UDim2.fromScale(1, 1);
+                        ZIndex = 8;
+                        Parent = ButtonInner;
+                    })
+
+                    local Camera = Instance.new("Camera")
+                    ViewportFrame.CurrentCamera = Camera
+                    Camera.Parent = ViewportFrame
+
+                    if ItemInfo.Model then
+                        local Model = ItemInfo.Model:Clone()
+                        Model.Parent = ViewportFrame
+                        local size = Model:IsA("Model") and select(2, Model:GetBoundingBox()) or Model.Size
+                        local maxExtent = math.max(size.X, size.Y, size.Z)
+                        local pos = Model:IsA("Model") and Model:GetPivot().Position or Model.Position
+                        Camera.CFrame = CFrame.new(pos + Vector3.new(0, maxExtent / 2, maxExtent * 2), pos)
+                    end
+
+                    local Label
+                    if ItemInfo.Text then
+                        Label = Library:CreateLabel({
+                            Size = UDim2.new(1, 0, 0, 12);
+                            Position = UDim2.new(0, 0, 1, -12);
+                            TextSize = 10;
+                            Text = ItemInfo.Text;
+                            TextXAlignment = Enum.TextXAlignment.Center;
+                            ZIndex = 9;
+                            Parent = ButtonInner;
+                        })
+                    end
+
+                    local function UpdateHighlight()
+                        if Item.Selected then
+                            ButtonOuter.BorderColor3 = Library.AccentColor
+                        else
+                            ButtonOuter.BorderColor3 = Library.OutlineColor
+                        end
+                    end
+
+                    ButtonInner.InputBegan:Connect(function(Input)
+                        if (Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch) then
+                            if ItemInfo.Toggle then
+                                for _, Other in pairs(CategoryObj.Items) do
+                                    if Other ~= Item then
+                                        Other:SetSelected(false)
+                                    end
+                                end
+                                Item:SetSelected(true)
+                            end
+                            Library:SafeCallback(Item.Callback, Item.Selected)
+                        end
+                    end)
+
+                    function Item:SetVisible(val)
+                        Item.Visible = val
+                        ButtonOuter.Visible = val
+                        GridContainer.Size = UDim2.new(1, 0, 0, Grid.AbsoluteContentSize.Y)
+                    end
+
+                    function Item:SetSelected(val)
+                        Item.Selected = val
+                        UpdateHighlight()
+                    end
+
+                    Item.Frame = ButtonOuter
+                    table.insert(CategoryObj.Items, Item)
+                    GridContainer.Size = UDim2.new(1, 0, 0, Grid.AbsoluteContentSize.Y)
+
+                    return Item
+                end
+
+                function CategoryObj:AddMiniImageLabelButton(ItemInfo)
+                    local Item = {
+                        Type = "MiniImageLabelButton",
+                        Visible = true,
+                        Selected = false,
+                        Callback = ItemInfo.Callback,
+                    }
+
+                    local Size = ItemInfo.Size or UDim2.fromOffset(50, 50)
+                    local ButtonOuter = Library:Create("Frame", {
+                        BackgroundColor3 = Color3.new(0, 0, 0);
+                        BorderColor3 = Library.OutlineColor;
+                        Size = Size;
+                        ZIndex = 6;
+                        Parent = GridContainer;
+                    })
+
+                    Library:AddToRegistry(ButtonOuter, {
+                        BorderColor3 = "OutlineColor";
+                    })
+
+                    local ButtonInner = Library:Create("Frame", {
+                        BackgroundColor3 = Library.MainColor;
+                        BorderColor3 = Color3.new(0, 0, 0);
+                        Size = UDim2.new(1, -2, 1, -2);
+                        Position = UDim2.new(0, 1, 0, 1);
+                        ZIndex = 7;
+                        Parent = ButtonOuter;
+                    })
+
+                    Library:AddToRegistry(ButtonInner, {
+                        BackgroundColor3 = "MainColor";
+                    })
+
+                    local ImageLabel = Library:Create("ImageLabel", {
+                        BackgroundTransparency = 1;
+                        Size = UDim2.fromScale(1, 1);
+                        Image = ItemInfo.Image or "";
+                        ZIndex = 8;
+                        Parent = ButtonInner;
+                    })
+
+                    local Label
+                    if ItemInfo.Text then
+                        Label = Library:CreateLabel({
+                            Size = UDim2.new(1, 0, 0, 12);
+                            Position = UDim2.new(0, 0, 1, -12);
+                            TextSize = 10;
+                            Text = ItemInfo.Text;
+                            TextXAlignment = Enum.TextXAlignment.Center;
+                            ZIndex = 9;
+                            Parent = ButtonInner;
+                        })
+                    end
+
+                    local function UpdateHighlight()
+                        if Item.Selected then
+                            ButtonOuter.BorderColor3 = Library.AccentColor
+                        else
+                            ButtonOuter.BorderColor3 = Library.OutlineColor
+                        end
+                    end
+
+                    ButtonInner.InputBegan:Connect(function(Input)
+                        if (Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch) then
+                            if ItemInfo.Toggle then
+                                for _, Other in pairs(CategoryObj.Items) do
+                                    if Other ~= Item then
+                                        Other:SetSelected(false)
+                                    end
+                                end
+                                Item:SetSelected(true)
+                            end
+                            Library:SafeCallback(Item.Callback, Item.Selected)
+                        end
+                    end)
+
+                    function Item:SetVisible(val)
+                        Item.Visible = val
+                        ButtonOuter.Visible = val
+                        GridContainer.Size = UDim2.new(1, 0, 0, Grid.AbsoluteContentSize.Y)
+                    end
+
+                    function Item:SetSelected(val)
+                        Item.Selected = val
+                        UpdateHighlight()
+                    end
+
+                    Item.Frame = ButtonOuter
+                    table.insert(CategoryObj.Items, Item)
+                    GridContainer.Size = UDim2.new(1, 0, 0, Grid.AbsoluteContentSize.Y)
+
+                    return Item
+                end
+
+                function CategoryObj:AddCenterButton(BtnInfo)
+                    local Button = {
+                        Type = "CenterButton",
+                        Visible = true,
+                        Callback = BtnInfo.Callback,
+                    }
+
+                    local Outer = Library:Create("Frame", {
+                        BackgroundColor3 = Color3.new(0, 0, 0);
+                        BorderColor3 = Color3.new(0, 0, 0);
+                        Size = UDim2.new(1, 0, 0, 24);
+                        ZIndex = 5;
+                        Parent = BottomButtonsContainer;
+                    })
+
+                    local Inner = Library:Create("Frame", {
+                        BackgroundColor3 = Library.MainColor;
+                        BorderColor3 = Library.OutlineColor;
+                        BorderMode = Enum.BorderMode.Inset;
+                        Size = UDim2.new(1, 0, 1, 0);
+                        ZIndex = 6;
+                        Parent = Outer;
+                    })
+
+                    local Label = Library:CreateLabel({
+                        Size = UDim2.new(1, 0, 1, 0);
+                        TextSize = 14;
+                        Text = BtnInfo.Text;
+                        TextColor3 = BtnInfo.Risky and Library.RiskColor or Color3.new(1, 1, 1);
+                        ZIndex = 6;
+                        Parent = Inner;
+                        RichText = true;
+                    })
+
+                    Library:Create("UIGradient", {
+                        Color = ColorSequence.new({
+                            ColorSequenceKeypoint.new(0, Color3.new(1, 1, 1)),
+                            ColorSequenceKeypoint.new(1, Color3.fromRGB(212, 212, 212))
+                        });
+                        Rotation = 90;
+                        Parent = Inner;
+                    })
+
+                    Library:AddToRegistry(Outer, {
+                        BorderColor3 = "Black";
+                    })
+
+                    Library:AddToRegistry(Inner, {
+                        BackgroundColor3 = "MainColor";
+                        BorderColor3 = "OutlineColor";
+                    })
+
+                    Library:OnHighlight(Outer, Outer,
+                        { BorderColor3 = "AccentColor" },
+                        { BorderColor3 = "Black" }
+                    )
+
+                    Inner.InputBegan:Connect(function(Input)
+                        if (Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch) then
+                            Library:SafeCallback(Button.Callback)
+                        end
+                    end)
+
+                    function Button:SetVisible(val)
+                        Button.Visible = val
+                        Outer.Visible = val
+                        BottomButtonsContainer.Size = UDim2.new(1, 0, 0, BottomList.AbsoluteContentSize.Y)
+                    end
+
+                    table.insert(CategoryObj.Buttons, Button)
+                    BottomButtonsContainer.Size = UDim2.new(1, 0, 0, BottomList.AbsoluteContentSize.Y)
+
+                    return Button
+                end
+
+                CenterGroup.Category[CatName] = CategoryObj
+                CategoryObj.Frame = CatContainer
+                CategoryObj.GridContainer = GridContainer
+                CategoryObj.Grid = Grid
+                CategoryObj.SearchBarEnabled = not not CatInfo.SearchBar
+            end
+
+            local function UpdateCategoryView()
+                local ActiveObj = CenterGroup.Category[ActiveCategoryName]
+                for CatName, CategoryObj in pairs(CenterGroup.Category) do
+                    CategoryObj.Frame.Visible = (CatName == ActiveCategoryName)
+                end
+
+                if ActiveObj then
+                    SearchBarOuter.Visible = ActiveObj.SearchBarEnabled
+                else
+                    SearchBarOuter.Visible = false
+                end
+            end
+
+            UpdateCategoryView()
+
+            local ListOuter = Library:Create("Frame", {
+                BackgroundColor3 = Color3.new(0, 0, 0);
+                BorderColor3 = Color3.new(0, 0, 0);
+                ZIndex = 20;
+                Visible = false;
+                Parent = ScreenGui;
+            })
+
+            local function RecalculateListPosition()
+                ListOuter.Position = UDim2.fromOffset(DropdownOuter.AbsolutePosition.X, DropdownOuter.AbsolutePosition.Y + DropdownOuter.Size.Y.Offset + 1)
+            end
+
+            local function RecalculateListSize()
+                local Y = math.clamp(#DropdownValues * (20 * DPIScale), 0, 8 * (20 * DPIScale)) + 1
+                ListOuter.Size = UDim2.fromOffset(DropdownOuter.AbsoluteSize.X + 0.5, Y)
+            end
+
+            RecalculateListPosition()
+            RecalculateListSize()
+
+            DropdownOuter:GetPropertyChangedSignal("AbsolutePosition"):Connect(RecalculateListPosition)
+            DropdownOuter:GetPropertyChangedSignal("AbsoluteSize"):Connect(RecalculateListSize)
+
+            local ListInner = Library:Create("Frame", {
+                BackgroundColor3 = Library.MainColor;
+                BorderColor3 = Library.OutlineColor;
+                BorderMode = Enum.BorderMode.Inset;
+                BorderSizePixel = 0;
+                Size = UDim2.new(1, 0, 1, 0);
+                ZIndex = 21;
+                Parent = ListOuter;
+            })
+
+            Library:AddToRegistry(ListInner, {
+                BackgroundColor3 = "MainColor";
+                BorderColor3 = "OutlineColor";
+            })
+
+            local Scrolling = Library:Create("ScrollingFrame", {
+                BackgroundTransparency = 1;
+                BorderSizePixel = 0;
+                CanvasSize = UDim2.new(0, 0, 0, 0);
+                Size = UDim2.new(1, 0, 1, 0);
+                ZIndex = 21;
+                Parent = ListInner;
+                ScrollBarThickness = 3,
+                ScrollBarImageColor3 = Library.AccentColor,
+            })
+
+            Library:AddToRegistry(Scrolling, {
+                ScrollBarImageColor3 = "AccentColor"
+            })
+
+            Library:Create("UIListLayout", {
+                Padding = UDim.new(0, 0);
+                FillDirection = Enum.FillDirection.Vertical;
+                SortOrder = Enum.SortOrder.LayoutOrder;
+                Parent = Scrolling;
+            })
+
+            local function BuildCategoryDropdownList()
+                for _, Element in next, Scrolling:GetChildren() do
+                    if not Element:IsA("UIListLayout") then
+                        Element:Destroy()
+                    end
+                end
+
+                local Count = 0
+                for _, Value in next, DropdownValues do
+                    Count = Count + 1
+
+                    local Button = Library:Create("TextButton", {
+                        AutoButtonColor = false,
+                        BackgroundColor3 = Library.MainColor;
+                        BorderColor3 = Library.OutlineColor;
+                        BorderMode = Enum.BorderMode.Middle;
+                        Size = UDim2.new(1, -1, 0, 20);
+                        Text = "";
+                        ZIndex = 23;
+                        Parent = Scrolling;
+                    })
+
+                    Library:AddToRegistry(Button, {
+                        BackgroundColor3 = "MainColor";
+                        BorderColor3 = "OutlineColor";
+                    })
+
+                    local ButtonLabel = Library:CreateLabel({
+                        Active = false;
+                        Size = UDim2.new(1, -6, 1, 0);
+                        Position = UDim2.new(0, 6, 0, 0);
+                        TextSize = 14;
+                        Text = Value;
+                        TextXAlignment = Enum.TextXAlignment.Left;
+                        RichText = true;
+                        ZIndex = 25;
+                        Parent = Button;
+                    })
+
+                    Library:OnHighlight(Button, Button,
+                        { BorderColor3 = "AccentColor", ZIndex = 24 },
+                        { BorderColor3 = "OutlineColor", ZIndex = 23 }
+                    )
+
+                    Button.MouseButton1Click:Connect(function()
+                        ActiveCategoryName = Value
+                        DisplayLabel.Text = Value
+                        UpdateCategoryView()
+                        ListOuter.Visible = false
+                        DropdownArrow.Rotation = 0
+                    end)
+                end
+
+                Scrolling.CanvasSize = UDim2.fromOffset(0, (Count * (20 * DPIScale)) + 1)
+            end
+
+            BuildCategoryDropdownList()
+
+            DropdownOuter.InputBegan:Connect(function(Input)
+                if (Input.UserInputType == Enum.UserInputType.MouseButton1 and not Library:MouseIsOverOpenedFrame()) or Input.UserInputType == Enum.UserInputType.Touch then
+                    if ListOuter.Visible then
+                        ListOuter.Visible = false
+                        DropdownArrow.Rotation = 0
+                    else
+                        RecalculateListPosition()
+                        RecalculateListSize()
+                        ListOuter.Visible = true
+                        DropdownArrow.Rotation = 180
+                    end
+                end
+            end)
+
+            InputService.InputBegan:Connect(function(Input)
+                if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+                    local AbsPos, AbsSize = ListOuter.AbsolutePosition, ListOuter.AbsoluteSize
+                    if Mouse.X < AbsPos.X or Mouse.X > AbsPos.X + AbsSize.X
+                        or Mouse.Y < (AbsPos.Y - 24 - 1) or Mouse.Y > AbsPos.Y + AbsSize.Y then
+                        ListOuter.Visible = false
+                        DropdownArrow.Rotation = 0
+                    end
+                end
+            end)
+
+            SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
+                local Query = string.lower(SearchBox.Text)
+                local ActiveObj = CenterGroup.Category[ActiveCategoryName]
+                if ActiveObj then
+                    for _, Item in pairs(ActiveObj.Items) do
+                        local labelText = ""
+                        local LabelChild = Item.Frame and Item.Frame:FindFirstChildOfClass("Frame") and Item.Frame:FindFirstChildOfClass("Frame"):FindFirstChildOfClass("TextLabel")
+                        if LabelChild then
+                            labelText = string.lower(LabelChild.Text)
+                        end
+                        if string.find(labelText, Query) or Query == "" then
+                            Item:SetVisible(true)
+                        else
+                            Item:SetVisible(false)
+                        end
+                    end
+                end
+            end)
+
+            local function ResizeOuterBox()
+                local Size = 0
+                for _, Element in next, Container:GetChildren() do
+                    if (not Element:IsA("UIListLayout")) and Element.Visible then
+                        Size = Size + Element.Size.Y.Offset
+                    end
+                end
+                BoxOuter.Size = UDim2.new(1, 0, 0, Size + 20)
+            end
+
+            Container.ChildAdded:Connect(ResizeOuterBox)
+            Container.ChildRemoved:Connect(ResizeOuterBox)
+            for _, CatObj in pairs(CenterGroup.Category) do
+                CatObj.Frame:GetPropertyChangedSignal("Visible"):Connect(ResizeOuterBox)
+                CatObj.GridContainer:GetPropertyChangedSignal("Size"):Connect(ResizeOuterBox)
+                CatObj.Frame.ChildAdded:Connect(ResizeOuterBox)
+                CatObj.Frame.ChildRemoved:Connect(ResizeOuterBox)
+            end
+
+            ResizeOuterBox()
+
+            return CenterGroup
+        end
+
+        function Tab:AddCenterSkinGroup(Info)
+            LeftSide.Visible = false
+            RightSide.Visible = false
+            CenterSide.Visible = true
+
+            local CenterSkinGroup = {
+                Categories = {},
+                WeaponModels = {},
+                ActiveWeapon = nil,
+                Tab = Tab,
+            }
+
+            local WeaponNames = {}
+            for WepName, WepInfo in pairs(Info.Weapon or {}) do
+                table.insert(WeaponNames, WepName)
+                CenterSkinGroup.WeaponModels[WepName] = WepInfo.Model or WepInfo.Image
+            end
+            table.sort(WeaponNames)
+            CenterSkinGroup.ActiveWeapon = WeaponNames[1]
+
+            local BoxOuter = Library:Create("Frame", {
+                BackgroundColor3 = Library.BackgroundColor;
+                BorderColor3 = Library.OutlineColor;
+                BorderMode = Enum.BorderMode.Inset;
+                Size = UDim2.new(1, 0, 0, 507 + 2);
+                ZIndex = 2;
+                Parent = CenterSide;
+            })
+
+            Library:AddToRegistry(BoxOuter, {
+                BackgroundColor3 = "BackgroundColor";
+                BorderColor3 = "OutlineColor";
+            })
+
+            local BoxInner = Library:Create("Frame", {
+                BackgroundColor3 = Library.BackgroundColor;
+                BorderColor3 = Color3.new(0, 0, 0);
+                Size = UDim2.new(1, -2, 1, -2);
+                Position = UDim2.new(0, 1, 0, 1);
+                ZIndex = 4;
+                Parent = BoxOuter;
+            })
+
+            Library:AddToRegistry(BoxInner, {
+                BackgroundColor3 = "BackgroundColor";
+            })
+
+            local Highlight = Library:Create("Frame", {
+                BackgroundColor3 = Library.AccentColor;
+                BorderSizePixel = 0;
+                Size = UDim2.new(1, 0, 0, 2);
+                ZIndex = 5;
+                Parent = BoxInner;
+            })
+
+            Library:AddToRegistry(Highlight, {
+                BackgroundColor3 = "AccentColor";
+            })
+
+            local Container = Library:Create("Frame", {
+                BackgroundTransparency = 1;
+                Position = UDim2.new(0, 8, 0, 10);
+                Size = UDim2.new(1, -16, 1, -10);
+                ZIndex = 1;
+                Parent = BoxInner;
+            })
+
+            Library:Create("UIListLayout", {
+                FillDirection = Enum.FillDirection.Vertical;
+                SortOrder = Enum.SortOrder.LayoutOrder;
+                Padding = UDim.new(0, 6);
+                Parent = Container;
+            })
+
+            local DropdownOuter = Library:Create("Frame", {
+                BackgroundColor3 = Color3.new(0, 0, 0);
+                BorderColor3 = Library.OutlineColor;
+                Size = UDim2.new(1, 0, 0, 24);
+                ZIndex = 5;
+                Parent = Container;
+            })
+
+            Library:AddToRegistry(DropdownOuter, {
+                BorderColor3 = "OutlineColor";
+            })
+
+            local DropdownInner = Library:Create("Frame", {
+                BackgroundColor3 = Library.MainColor;
+                BorderColor3 = Library.OutlineColor;
+                BorderMode = Enum.BorderMode.Inset;
+                Size = UDim2.new(1, 0, 1, 0);
+                ZIndex = 6;
+                Parent = DropdownOuter;
+            })
+
+            Library:AddToRegistry(DropdownInner, {
+                BackgroundColor3 = "MainColor";
+                BorderColor3 = "OutlineColor";
+            })
+
+            local DropdownArrow = Library:Create("ImageLabel", {
+                AnchorPoint = Vector2.new(0, 0.5);
+                BackgroundTransparency = 1;
+                Position = UDim2.new(1, -20, 0.5, 0);
+                Size = UDim2.new(0, 12, 0, 12);
+                Image = CustomImageManager.GetAsset("DropdownArrow");
+                ZIndex = 8;
+                Parent = DropdownInner;
+            })
+
+            local DisplayLabel = Library:CreateLabel({
+                Position = UDim2.new(0, 10, 0, 0);
+                Size = UDim2.new(1, -30, 1, 0);
+                TextSize = 14;
+                Text = CenterSkinGroup.ActiveWeapon or "None";
+                TextXAlignment = Enum.TextXAlignment.Left;
+                RichText = true;
+                ZIndex = 7;
+                Parent = DropdownInner;
+            })
+
+            local SubTabsContainer = Library:Create("Frame", {
+                BackgroundTransparency = 1;
+                Size = UDim2.new(1, 0, 0, 24);
+                ZIndex = 5;
+                Parent = Container;
+            })
+
+            local SubTabsList = Library:Create("UIListLayout", {
+                FillDirection = Enum.FillDirection.Horizontal;
+                SortOrder = Enum.SortOrder.LayoutOrder;
+                Padding = UDim.new(0, 6);
+                Parent = SubTabsContainer;
+            })
+
+            local ActiveCategoryName = nil
+            local Categories = {}
+
+            local ListOuter = Library:Create("Frame", {
+                BackgroundColor3 = Color3.new(0, 0, 0);
+                BorderColor3 = Color3.new(0, 0, 0);
+                ZIndex = 20;
+                Visible = false;
+                Parent = ScreenGui;
+            })
+
+            local function RecalculateListPosition()
+                ListOuter.Position = UDim2.fromOffset(DropdownOuter.AbsolutePosition.X, DropdownOuter.AbsolutePosition.Y + DropdownOuter.Size.Y.Offset + 1)
+            end
+
+            local function RecalculateListSize()
+                local Y = math.clamp(#WeaponNames * (20 * DPIScale), 0, 8 * (20 * DPIScale)) + 1
+                ListOuter.Size = UDim2.fromOffset(DropdownOuter.AbsoluteSize.X + 0.5, Y)
+            end
+
+            RecalculateListPosition()
+            RecalculateListSize()
+
+            DropdownOuter:GetPropertyChangedSignal("AbsolutePosition"):Connect(RecalculateListPosition)
+            DropdownOuter:GetPropertyChangedSignal("AbsoluteSize"):Connect(RecalculateListSize)
+
+            local ListInner = Library:Create("Frame", {
+                BackgroundColor3 = Library.MainColor;
+                BorderColor3 = Library.OutlineColor;
+                BorderMode = Enum.BorderMode.Inset;
+                BorderSizePixel = 0;
+                Size = UDim2.new(1, 0, 1, 0);
+                ZIndex = 21;
+                Parent = ListOuter;
+            })
+
+            Library:AddToRegistry(ListInner, {
+                BackgroundColor3 = "MainColor";
+                BorderColor3 = "OutlineColor";
+            })
+
+            local Scrolling = Library:Create("ScrollingFrame", {
+                BackgroundTransparency = 1;
+                BorderSizePixel = 0;
+                CanvasSize = UDim2.new(0, 0, 0, 0);
+                Size = UDim2.new(1, 0, 1, 0);
+                ZIndex = 21;
+                Parent = ListInner;
+                ScrollBarThickness = 3,
+                ScrollBarImageColor3 = Library.AccentColor,
+            })
+
+            Library:AddToRegistry(Scrolling, {
+                ScrollBarImageColor3 = "AccentColor"
+            })
+
+            Library:Create("UIListLayout", {
+                Padding = UDim.new(0, 0);
+                FillDirection = Enum.FillDirection.Vertical;
+                SortOrder = Enum.SortOrder.LayoutOrder;
+                Parent = Scrolling;
+            })
+
+            local function UpdateCategoryVisibility()
+                for _, Cat in pairs(Categories) do
+                    Cat.Frame.Visible = (Cat.Name == ActiveCategoryName)
+                end
+            end
+
+            local function BuildWeaponDropdownList()
+                for _, Element in next, Scrolling:GetChildren() do
+                    if not Element:IsA("UIListLayout") then
+                        Element:Destroy()
+                    end
+                end
+
+                local Count = 0
+                for _, Value in next, WeaponNames do
+                    Count = Count + 1
+
+                    local Button = Library:Create("TextButton", {
+                        AutoButtonColor = false,
+                        BackgroundColor3 = Library.MainColor;
+                        BorderColor3 = Library.OutlineColor;
+                        BorderMode = Enum.BorderMode.Middle;
+                        Size = UDim2.new(1, -1, 0, 20);
+                        Text = "";
+                        ZIndex = 23;
+                        Parent = Scrolling;
+                    })
+
+                    Library:AddToRegistry(Button, {
+                        BackgroundColor3 = "MainColor";
+                        BorderColor3 = "OutlineColor";
+                    })
+
+                    local ButtonLabel = Library:CreateLabel({
+                        Active = false;
+                        Size = UDim2.new(1, -6, 1, 0);
+                        Position = UDim2.new(0, 6, 0, 0);
+                        TextSize = 14;
+                        Text = Value;
+                        TextXAlignment = Enum.TextXAlignment.Left;
+                        RichText = true;
+                        ZIndex = 25;
+                        Parent = Button;
+                    })
+
+                    Library:OnHighlight(Button, Button,
+                        { BorderColor3 = "AccentColor", ZIndex = 24 },
+                        { BorderColor3 = "OutlineColor", ZIndex = 23 }
+                    )
+
+                    Button.MouseButton1Click:Connect(function()
+                        CenterSkinGroup.ActiveWeapon = Value
+                        DisplayLabel.Text = Value
+                        ListOuter.Visible = false
+                        DropdownArrow.Rotation = 0
+                        if ActiveCategoryName then
+                            local ActiveCat = CenterSkinGroup.Categories[ActiveCategoryName]
+                            if ActiveCat and ActiveCat.OnWeaponChanged then
+                                ActiveCat:OnWeaponChanged(Value)
+                            end
+                        end
+                    end)
+                end
+
+                Scrolling.CanvasSize = UDim2.fromOffset(0, (Count * (20 * DPIScale)) + 1)
+            end
+
+            BuildWeaponDropdownList()
+
+            DropdownOuter.InputBegan:Connect(function(Input)
+                if (Input.UserInputType == Enum.UserInputType.MouseButton1 and not Library:MouseIsOverOpenedFrame()) or Input.UserInputType == Enum.UserInputType.Touch then
+                    if ListOuter.Visible then
+                        ListOuter.Visible = false
+                        DropdownArrow.Rotation = 0
+                    else
+                        RecalculateListPosition()
+                        RecalculateListSize()
+                        ListOuter.Visible = true
+                        DropdownArrow.Rotation = 180
+                    end
+                end
+            end)
+
+            InputService.InputBegan:Connect(function(Input)
+                if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+                    local AbsPos, AbsSize = ListOuter.AbsolutePosition, ListOuter.AbsoluteSize
+                    if Mouse.X < AbsPos.X or Mouse.X > AbsPos.X + AbsSize.X
+                        or Mouse.Y < (AbsPos.Y - 24 - 1) or Mouse.Y > AbsPos.Y + AbsSize.Y then
+                        ListOuter.Visible = false
+                        DropdownArrow.Rotation = 0
+                    end
+                end
+            end)
+
+            function CenterSkinGroup:AddCategory(CatInfo)
+                local CatName = CatInfo.Name
+                local CategoryObj = {
+                    Name = CatName,
+                    Items = {},
+                    Buttons = {},
+                }
+
+                if CatInfo.Opened or not ActiveCategoryName then
+                    ActiveCategoryName = CatName
+                end
+
+                local TabBtnOuter = Library:Create("Frame", {
+                    BackgroundColor3 = Color3.new(0, 0, 0);
+                    BorderColor3 = Library.OutlineColor;
+                    Size = UDim2.fromOffset(100, 24);
+                    ZIndex = 6;
+                    Parent = SubTabsContainer;
+                })
+
+                Library:AddToRegistry(TabBtnOuter, {
+                    BorderColor3 = "OutlineColor";
+                })
+
+                local TabBtnInner = Library:Create("Frame", {
+                    BackgroundColor3 = Library.MainColor;
+                    BorderColor3 = Color3.new(0, 0, 0);
+                    Size = UDim2.new(1, -2, 1, -2);
+                    Position = UDim2.new(0, 1, 0, 1);
+                    ZIndex = 7;
+                    Parent = TabBtnOuter;
+                })
+
+                local TabBtnLabel = Library:CreateLabel({
+                    Size = UDim2.new(1, 0, 1, 0);
+                    TextSize = 14;
+                    Text = CatName;
+                    TextXAlignment = Enum.TextXAlignment.Center;
+                    ZIndex = 8;
+                    Parent = TabBtnInner;
+                })
+
+                local function UpdateTabButtonSelection()
+                    if ActiveCategoryName == CatName then
+                        TabBtnInner.BackgroundColor3 = Library.AccentColor
+                        TabBtnLabel.TextColor3 = Color3.new(1, 1, 1)
+                    else
+                        TabBtnInner.BackgroundColor3 = Library.MainColor
+                        TabBtnLabel.TextColor3 = Library.FontColor
+                    end
+                end
+
+                UpdateTabButtonSelection()
+
+                local CatContainer = Library:Create("Frame", {
+                    BackgroundTransparency = 1;
+                    Size = UDim2.new(1, 0, 0, 0);
+                    ZIndex = 5;
+                    Visible = (CatName == ActiveCategoryName);
+                    Parent = Container;
+                })
+
+                local CatList = Library:Create("UIListLayout", {
+                    FillDirection = Enum.FillDirection.Vertical;
+                    SortOrder = Enum.SortOrder.LayoutOrder;
+                    Padding = UDim.new(0, 6);
+                    Parent = CatContainer;
+                })
+
+                local GridContainer = Library:Create("Frame", {
+                    BackgroundTransparency = 1;
+                    Size = UDim2.new(1, 0, 0, 0);
+                    ZIndex = 5;
+                    Parent = CatContainer;
+                })
+
+                local Grid = Library:Create("UIGridLayout", {
+                    CellSize = UDim2.fromOffset(50, 50);
+                    CellPadding = UDim2.fromOffset(6, 6);
+                    SortOrder = Enum.SortOrder.LayoutOrder;
+                    Parent = GridContainer;
+                })
+
+                Grid:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+                    GridContainer.Size = UDim2.new(1, 0, 0, Grid.AbsoluteContentSize.Y)
+                end)
+
+                local BottomButtonsContainer = Library:Create("Frame", {
+                    BackgroundTransparency = 1;
+                    Size = UDim2.new(1, 0, 0, 0);
+                    ZIndex = 5;
+                    Parent = CatContainer;
+                })
+
+                local BottomList = Library:Create("UIListLayout", {
+                    FillDirection = Enum.FillDirection.Vertical;
+                    SortOrder = Enum.SortOrder.LayoutOrder;
+                    Padding = UDim.new(0, 4);
+                    Parent = BottomButtonsContainer;
+                })
+
+                BottomList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+                    BottomButtonsContainer.Size = UDim2.new(1, 0, 0, BottomList.AbsoluteContentSize.Y)
+                end)
+
+                TabBtnInner.InputBegan:Connect(function(Input)
+                    if (Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch) then
+                        ActiveCategoryName = CatName
+                        UpdateCategoryVisibility()
+                        for _, Cat in pairs(Categories) do
+                            Cat:UpdateTabButton()
+                        end
+                    end
+                end)
+
+                function CategoryObj:UpdateTabButton()
+                    UpdateTabButtonSelection()
+                end
+
+                function CategoryObj:AddMiniVIewPortButton(ItemInfo)
+                    local Item = {
+                        Type = "MiniVIewPortButton",
+                        Visible = true,
+                        Selected = false,
+                        Callback = ItemInfo.Callback,
+                    }
+
+                    local Size = ItemInfo.Size or UDim2.fromOffset(50, 50)
+                    local ButtonOuter = Library:Create("Frame", {
+                        BackgroundColor3 = Color3.new(0, 0, 0);
+                        BorderColor3 = Library.OutlineColor;
+                        Size = Size;
+                        ZIndex = 6;
+                        Parent = GridContainer;
+                    })
+
+                    Library:AddToRegistry(ButtonOuter, {
+                        BorderColor3 = "OutlineColor";
+                    })
+
+                    local ButtonInner = Library:Create("Frame", {
+                        BackgroundColor3 = Library.MainColor;
+                        BorderColor3 = Color3.new(0, 0, 0);
+                        Size = UDim2.new(1, -2, 1, -2);
+                        Position = UDim2.new(0, 1, 0, 1);
+                        ZIndex = 7;
+                        Parent = ButtonOuter;
+                    })
+
+                    Library:AddToRegistry(ButtonInner, {
+                        BackgroundColor3 = "MainColor";
+                    })
+
+                    local ViewportFrame = Library:Create("ViewportFrame", {
+                        BackgroundTransparency = 1;
+                        Size = UDim2.fromScale(1, 1);
+                        ZIndex = 8;
+                        Parent = ButtonInner;
+                    })
+
+                    local Camera = Instance.new("Camera")
+                    ViewportFrame.CurrentCamera = Camera
+                    Camera.Parent = ViewportFrame
+
+                    if ItemInfo.Model then
+                        local Model = ItemInfo.Model:Clone()
+                        Model.Parent = ViewportFrame
+                        local size = Model:IsA("Model") and select(2, Model:GetBoundingBox()) or Model.Size
+                        local maxExtent = math.max(size.X, size.Y, size.Z)
+                        local pos = Model:IsA("Model") and Model:GetPivot().Position or Model.Position
+                        Camera.CFrame = CFrame.new(pos + Vector3.new(0, maxExtent / 2, maxExtent * 2), pos)
+                    end
+
+                    local Label
+                    if ItemInfo.Text then
+                        Label = Library:CreateLabel({
+                            Size = UDim2.new(1, 0, 0, 12);
+                            Position = UDim2.new(0, 0, 1, -12);
+                            TextSize = 10;
+                            Text = ItemInfo.Text;
+                            TextXAlignment = Enum.TextXAlignment.Center;
+                            ZIndex = 9;
+                            Parent = ButtonInner;
+                        })
+                    end
+
+                    local function UpdateHighlight()
+                        if Item.Selected then
+                            ButtonOuter.BorderColor3 = Library.AccentColor
+                        else
+                            ButtonOuter.BorderColor3 = Library.OutlineColor
+                        end
+                    end
+
+                    ButtonInner.InputBegan:Connect(function(Input)
+                        if (Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch) then
+                            if ItemInfo.Toggle then
+                                for _, Other in pairs(CategoryObj.Items) do
+                                    if Other ~= Item then
+                                        Other:SetSelected(false)
+                                    end
+                                end
+                                Item:SetSelected(true)
+                            end
+                            Library:SafeCallback(Item.Callback, Item.Selected)
+                        end
+                    end)
+
+                    function Item:SetVisible(val)
+                        Item.Visible = val
+                        ButtonOuter.Visible = val
+                        GridContainer.Size = UDim2.new(1, 0, 0, Grid.AbsoluteContentSize.Y)
+                    end
+
+                    function Item:SetSelected(val)
+                        Item.Selected = val
+                        UpdateHighlight()
+                    end
+
+                    Item.Frame = ButtonOuter
+                    table.insert(CategoryObj.Items, Item)
+                    GridContainer.Size = UDim2.new(1, 0, 0, Grid.AbsoluteContentSize.Y)
+
+                    return Item
+                end
+
+                function CategoryObj:AddMiniImageLabelButton(ItemInfo)
+                    local Item = {
+                        Type = "MiniImageLabelButton",
+                        Visible = true,
+                        Selected = false,
+                        Callback = ItemInfo.Callback,
+                    }
+
+                    local Size = ItemInfo.Size or UDim2.fromOffset(50, 50)
+                    local ButtonOuter = Library:Create("Frame", {
+                        BackgroundColor3 = Color3.new(0, 0, 0);
+                        BorderColor3 = Library.OutlineColor;
+                        Size = Size;
+                        ZIndex = 6;
+                        Parent = GridContainer;
+                    })
+
+                    Library:AddToRegistry(ButtonOuter, {
+                        BorderColor3 = "OutlineColor";
+                    })
+
+                    local ButtonInner = Library:Create("Frame", {
+                        BackgroundColor3 = Library.MainColor;
+                        BorderColor3 = Color3.new(0, 0, 0);
+                        Size = UDim2.new(1, -2, 1, -2);
+                        Position = UDim2.new(0, 1, 0, 1);
+                        ZIndex = 7;
+                        Parent = ButtonOuter;
+                    })
+
+                    Library:AddToRegistry(ButtonInner, {
+                        BackgroundColor3 = "MainColor";
+                    })
+
+                    local ImageLabel = Library:Create("ImageLabel", {
+                        BackgroundTransparency = 1;
+                        Size = UDim2.fromScale(1, 1);
+                        Image = ItemInfo.Image or "";
+                        ZIndex = 8;
+                        Parent = ButtonInner;
+                    })
+
+                    local Label
+                    if ItemInfo.Text then
+                        Label = Library:CreateLabel({
+                            Size = UDim2.new(1, 0, 0, 12);
+                            Position = UDim2.new(0, 0, 1, -12);
+                            TextSize = 10;
+                            Text = ItemInfo.Text;
+                            TextXAlignment = Enum.TextXAlignment.Center;
+                            ZIndex = 9;
+                            Parent = ButtonInner;
+                        })
+                    end
+
+                    local function UpdateHighlight()
+                        if Item.Selected then
+                            ButtonOuter.BorderColor3 = Library.AccentColor
+                        else
+                            ButtonOuter.BorderColor3 = Library.OutlineColor
+                        end
+                    end
+
+                    ButtonInner.InputBegan:Connect(function(Input)
+                        if (Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch) then
+                            if ItemInfo.Toggle then
+                                for _, Other in pairs(CategoryObj.Items) do
+                                    if Other ~= Item then
+                                        Other:SetSelected(false)
+                                    end
+                                end
+                                Item:SetSelected(true)
+                            end
+                            Library:SafeCallback(Item.Callback, Item.Selected)
+                        end
+                    end)
+
+                    function Item:SetVisible(val)
+                        Item.Visible = val
+                        ButtonOuter.Visible = val
+                        GridContainer.Size = UDim2.new(1, 0, 0, Grid.AbsoluteContentSize.Y)
+                    end
+
+                    function Item:SetSelected(val)
+                        Item.Selected = val
+                        UpdateHighlight()
+                    end
+
+                    Item.Frame = ButtonOuter
+                    table.insert(CategoryObj.Items, Item)
+                    GridContainer.Size = UDim2.new(1, 0, 0, Grid.AbsoluteContentSize.Y)
+
+                    return Item
+                end
+
+                function CategoryObj:AddCenterButton(BtnInfo)
+                    local Button = {
+                        Type = "CenterButton",
+                        Visible = true,
+                        Callback = BtnInfo.Callback,
+                    }
+
+                    local Outer = Library:Create("Frame", {
+                        BackgroundColor3 = Color3.new(0, 0, 0);
+                        BorderColor3 = Color3.new(0, 0, 0);
+                        Size = UDim2.new(1, 0, 0, 24);
+                        ZIndex = 5;
+                        Parent = BottomButtonsContainer;
+                    })
+
+                    local Inner = Library:Create("Frame", {
+                        BackgroundColor3 = Library.MainColor;
+                        BorderColor3 = Library.OutlineColor;
+                        BorderMode = Enum.BorderMode.Inset;
+                        Size = UDim2.new(1, 0, 1, 0);
+                        ZIndex = 6;
+                        Parent = Outer;
+                    })
+
+                    local Label = Library:CreateLabel({
+                        Size = UDim2.new(1, 0, 1, 0);
+                        TextSize = 14;
+                        Text = BtnInfo.Text;
+                        TextColor3 = BtnInfo.Risky and Library.RiskColor or Color3.new(1, 1, 1);
+                        ZIndex = 6;
+                        Parent = Inner;
+                        RichText = true;
+                    })
+
+                    Library:Create("UIGradient", {
+                        Color = ColorSequence.new({
+                            ColorSequenceKeypoint.new(0, Color3.new(1, 1, 1)),
+                            ColorSequenceKeypoint.new(1, Color3.fromRGB(212, 212, 212))
+                        });
+                        Rotation = 90;
+                        Parent = Inner;
+                    })
+
+                    Library:AddToRegistry(Outer, {
+                        BorderColor3 = "Black";
+                    })
+
+                    Library:AddToRegistry(Inner, {
+                        BackgroundColor3 = "MainColor";
+                        BorderColor3 = "OutlineColor";
+                    })
+
+                    Library:OnHighlight(Outer, Outer,
+                        { BorderColor3 = "AccentColor" },
+                        { BorderColor3 = "Black" }
+                    )
+
+                    Inner.InputBegan:Connect(function(Input)
+                        if (Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch) then
+                            Library:SafeCallback(Button.Callback)
+                        end
+                    end)
+
+                    function Button:SetVisible(val)
+                        Button.Visible = val
+                        Outer.Visible = val
+                        BottomButtonsContainer.Size = UDim2.new(1, 0, 0, BottomList.AbsoluteContentSize.Y)
+                    end
+
+                    table.insert(CategoryObj.Buttons, Button)
+                    BottomButtonsContainer.Size = UDim2.new(1, 0, 0, BottomList.AbsoluteContentSize.Y)
+
+                    return Button
+                end
+
+                function CategoryObj:OnWeaponChanged(NewWeapon)
+                end
+
+                CenterSkinGroup.Categories[CatName] = CategoryObj
+                CategoryObj.Frame = CatContainer
+                CategoryObj.GridContainer = GridContainer
+                CategoryObj.Grid = Grid
+                table.insert(Categories, CategoryObj)
+
+                local function ResizeOuterBox()
+                    local Size = 0
+                    for _, Element in next, Container:GetChildren() do
+                        if (not Element:IsA("UIListLayout")) and Element.Visible then
+                            Size = Size + Element.Size.Y.Offset
+                        end
+                    end
+                    BoxOuter.Size = UDim2.new(1, 0, 0, Size + 20)
+                end
+
+                Container.ChildAdded:Connect(ResizeOuterBox)
+                Container.ChildRemoved:Connect(ResizeOuterBox)
+                CatContainer:GetPropertyChangedSignal("Visible"):Connect(ResizeOuterBox)
+                GridContainer:GetPropertyChangedSignal("Size"):Connect(ResizeOuterBox)
+                CatContainer.ChildAdded:Connect(ResizeOuterBox)
+                CatContainer.ChildRemoved:Connect(ResizeOuterBox)
+
+                ResizeOuterBox()
+                UpdateCategoryVisibility()
+
+                return CategoryObj
+            end
+
+            CenterSkinGroup.Categories["Skin"] = nil
+            CenterSkinGroup.Categories["Wrap"] = nil
+
+            return CenterSkinGroup
         end
 
         function Tab:AddLeftGroupbox(Name)
