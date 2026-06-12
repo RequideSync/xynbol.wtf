@@ -1,5 +1,4 @@
 -- xynbol.wtf | dev | ui
--- fix bugs
 local cloneref = (cloneref or clonereference or function(instance: any)
 	return instance
 end)
@@ -7823,6 +7822,43 @@ end
             return Tab:AddGroupbox({ Side = 2; Name = Name; })
         end
 
+        local function GetModelSizeAndPos(model)
+            if not model then
+                return Vector3.new(1, 1, 1), Vector3.new(0, 0, 0)
+            end
+            if model:IsA("BasePart") then
+                return model.Size, model.Position
+            elseif model:IsA("Model") then
+                local cf, size = model:GetBoundingBox()
+                return size, cf.Position
+            else
+                local minX, minY, minZ = math.huge, math.huge, math.huge
+                local maxX, maxY, maxZ = -math.huge, -math.huge, -math.huge
+                local count = 0
+                for _, part in ipairs(model:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        count = count + 1
+                        local pos = part.Position
+                        local sz = part.Size
+                        local px, py, pz = pos.X, pos.Y, pos.Z
+                        local sx, sy, szx = sz.X/2, sz.Y/2, sz.Z/2
+                        minX = math.min(minX, px - sx)
+                        maxX = math.max(maxX, px + sx)
+                        minY = math.min(minY, py - sy)
+                        maxY = math.max(maxY, py + sy)
+                        minZ = math.min(minZ, pz - szx)
+                        maxZ = math.max(maxZ, pz + szx)
+                    end
+                end
+                if count > 0 then
+                    local size = Vector3.new(maxX - minX, maxY - minY, maxZ - minZ)
+                    local center = Vector3.new((maxX + minX)/2, (maxY + minY)/2, (maxZ + minZ)/2)
+                    return size, center
+                end
+            end
+            return Vector3.new(1, 1, 1), Vector3.new(0, 0, 0)
+        end
+
         function Tab:AddCenterGroup(Info)
             LeftSide.Visible = false
             RightSide.Visible = false
@@ -8095,9 +8131,8 @@ end
 
                         local Model = ItemInfo.Model:Clone()
                         Model.Parent = ViewportFrame
-                        local size = Model:IsA("Model") and select(2, Model:GetBoundingBox()) or Model.Size
+                        local size, pos = GetModelSizeAndPos(Model)
                         local maxExtent = math.max(size.X, size.Y, size.Z)
-                        local pos = Model:IsA("Model") and Model:GetPivot().Position or Model.Position
                         
                         Camera.FieldOfView = ItemInfo.CameraFOV or 70
                         if ItemInfo.CameraCFrame then
@@ -8218,9 +8253,8 @@ end
 
                         local Model = ItemInfo.Model:Clone()
                         Model.Parent = ViewportFrame
-                        local size = Model:IsA("Model") and select(2, Model:GetBoundingBox()) or Model.Size
+                        local size, pos = GetModelSizeAndPos(Model)
                         local maxExtent = math.max(size.X, size.Y, size.Z)
-                        local pos = Model:IsA("Model") and Model:GetPivot().Position or Model.Position
                         
                         Camera.FieldOfView = ItemInfo.CameraFOV or 70
                         if ItemInfo.CameraCFrame then
@@ -8784,9 +8818,8 @@ end
                             local Model = WepPreview:Clone()
                             Model.Parent = vp
                             
-                            local size = Model:IsA("Model") and select(2, Model:GetBoundingBox()) or Model.Size
+                            local size, pos = GetModelSizeAndPos(Model)
                             local maxExtent = math.max(size.X, size.Y, size.Z)
-                            local pos = Model:IsA("Model") and Model:GetPivot().Position or Model.Position
                             
                             local fov = WepData.CameraFOV or 70
                             cam.FieldOfView = fov
@@ -9010,9 +9043,8 @@ end
 
                         local Model = ItemInfo.Model:Clone()
                         Model.Parent = ViewportFrame
-                        local size = Model:IsA("Model") and select(2, Model:GetBoundingBox()) or Model.Size
+                        local size, pos = GetModelSizeAndPos(Model)
                         local maxExtent = math.max(size.X, size.Y, size.Z)
-                        local pos = Model:IsA("Model") and Model:GetPivot().Position or Model.Position
                         
                         Camera.FieldOfView = ItemInfo.CameraFOV or 70
                         if ItemInfo.CameraCFrame then
@@ -9133,9 +9165,8 @@ end
 
                         local Model = ItemInfo.Model:Clone()
                         Model.Parent = ViewportFrame
-                        local size = Model:IsA("Model") and select(2, Model:GetBoundingBox()) or Model.Size
+                        local size, pos = GetModelSizeAndPos(Model)
                         local maxExtent = math.max(size.X, size.Y, size.Z)
-                        local pos = Model:IsA("Model") and Model:GetPivot().Position or Model.Position
                         
                         Camera.FieldOfView = ItemInfo.CameraFOV or 70
                         if ItemInfo.CameraCFrame then
