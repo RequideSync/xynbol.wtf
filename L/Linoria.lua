@@ -1,3 +1,4 @@
+-- xynbol.wtf | dev | ui
 local cloneref = (cloneref or clonereference or function(instance: any)
 	return instance
 end)
@@ -8079,24 +8080,40 @@ end
                         BackgroundColor3 = "MainColor";
                     })
 
-                    local ViewportFrame = Library:Create("ViewportFrame", {
-                        BackgroundTransparency = 1;
-                        Size = UDim2.fromScale(1, 1);
-                        ZIndex = 8;
-                        Parent = ButtonInner;
-                    })
-
-                    local Camera = Instance.new("Camera")
-                    ViewportFrame.CurrentCamera = Camera
-                    Camera.Parent = ViewportFrame
-
                     if ItemInfo.Model then
+                        local ViewportFrame = Library:Create("ViewportFrame", {
+                            BackgroundTransparency = 1;
+                            Size = UDim2.fromScale(1, 1);
+                            ZIndex = 8;
+                            Parent = ButtonInner;
+                        })
+
+                        local Camera = Instance.new("Camera")
+                        ViewportFrame.CurrentCamera = Camera
+                        Camera.Parent = ViewportFrame
+
                         local Model = ItemInfo.Model:Clone()
                         Model.Parent = ViewportFrame
                         local size = Model:IsA("Model") and select(2, Model:GetBoundingBox()) or Model.Size
                         local maxExtent = math.max(size.X, size.Y, size.Z)
                         local pos = Model:IsA("Model") and Model:GetPivot().Position or Model.Position
-                        Camera.CFrame = CFrame.new(pos + Vector3.new(0, maxExtent / 2, maxExtent * 2), pos)
+                        
+                        Camera.FieldOfView = ItemInfo.CameraFOV or 70
+                        if ItemInfo.CameraCFrame then
+                            Camera.CFrame = ItemInfo.CameraCFrame
+                        else
+                            local zoom = ItemInfo.ZoomFactor or 2
+                            local offset = ItemInfo.CameraOffset or Vector3.new(0, maxExtent / 2, maxExtent * zoom)
+                            Camera.CFrame = CFrame.new(pos + offset, pos)
+                        end
+                    elseif ItemInfo.Image then
+                        local ImageLabel = Library:Create("ImageLabel", {
+                            BackgroundTransparency = 1;
+                            Size = UDim2.fromScale(1, 1);
+                            Image = ItemInfo.Image or "";
+                            ZIndex = 8;
+                            Parent = ButtonInner;
+                        })
                     end
 
                     local Label
@@ -8104,7 +8121,7 @@ end
                         Label = Library:CreateLabel({
                             Size = UDim2.new(1, 0, 0, 12);
                             Position = UDim2.new(0, 0, 1, -12);
-                            TextSize = 10;
+                            TextSize = ItemInfo.TextSize or 10;
                             Text = ItemInfo.Text;
                             TextXAlignment = Enum.TextXAlignment.Center;
                             ZIndex = 9;
@@ -8186,20 +8203,48 @@ end
                         BackgroundColor3 = "MainColor";
                     })
 
-                    local ImageLabel = Library:Create("ImageLabel", {
-                        BackgroundTransparency = 1;
-                        Size = UDim2.fromScale(1, 1);
-                        Image = ItemInfo.Image or "";
-                        ZIndex = 8;
-                        Parent = ButtonInner;
-                    })
+                    if ItemInfo.Model then
+                        local ViewportFrame = Library:Create("ViewportFrame", {
+                            BackgroundTransparency = 1;
+                            Size = UDim2.fromScale(1, 1);
+                            ZIndex = 8;
+                            Parent = ButtonInner;
+                        })
+
+                        local Camera = Instance.new("Camera")
+                        ViewportFrame.CurrentCamera = Camera
+                        Camera.Parent = ViewportFrame
+
+                        local Model = ItemInfo.Model:Clone()
+                        Model.Parent = ViewportFrame
+                        local size = Model:IsA("Model") and select(2, Model:GetBoundingBox()) or Model.Size
+                        local maxExtent = math.max(size.X, size.Y, size.Z)
+                        local pos = Model:IsA("Model") and Model:GetPivot().Position or Model.Position
+                        
+                        Camera.FieldOfView = ItemInfo.CameraFOV or 70
+                        if ItemInfo.CameraCFrame then
+                            Camera.CFrame = ItemInfo.CameraCFrame
+                        else
+                            local zoom = ItemInfo.ZoomFactor or 2
+                            local offset = ItemInfo.CameraOffset or Vector3.new(0, maxExtent / 2, maxExtent * zoom)
+                            Camera.CFrame = CFrame.new(pos + offset, pos)
+                        end
+                    elseif ItemInfo.Image then
+                        local ImageLabel = Library:Create("ImageLabel", {
+                            BackgroundTransparency = 1;
+                            Size = UDim2.fromScale(1, 1);
+                            Image = ItemInfo.Image or "";
+                            ZIndex = 8;
+                            Parent = ButtonInner;
+                        })
+                    end
 
                     local Label
                     if ItemInfo.Text then
                         Label = Library:CreateLabel({
                             Size = UDim2.new(1, 0, 0, 12);
                             Position = UDim2.new(0, 0, 1, -12);
-                            TextSize = 10;
+                            TextSize = ItemInfo.TextSize or 10;
                             Text = ItemInfo.Text;
                             TextXAlignment = Enum.TextXAlignment.Center;
                             ZIndex = 9;
@@ -8607,7 +8652,7 @@ end
             local DropdownOuter = Library:Create("Frame", {
                 BackgroundColor3 = Color3.new(0, 0, 0);
                 BorderColor3 = Library.OutlineColor;
-                Size = UDim2.new(1, 0, 0, 24);
+                Size = UDim2.new(1, 0, 0, 105);
                 ZIndex = 5;
                 Parent = Container;
             })
@@ -8630,103 +8675,34 @@ end
                 BorderColor3 = "OutlineColor";
             })
 
-            local DropdownArrow = Library:Create("ImageLabel", {
-                AnchorPoint = Vector2.new(0, 0.5);
-                BackgroundTransparency = 1;
-                Position = UDim2.new(1, -20, 0.5, 0);
-                Size = UDim2.new(0, 12, 0, 12);
-                Image = CustomImageManager.GetAsset("DropdownArrow");
-                ZIndex = 8;
-                Parent = DropdownInner;
-            })
-
-            local DisplayLabel = Library:CreateLabel({
-                Position = UDim2.new(0, 10, 0, 0);
-                Size = UDim2.new(1, -30, 1, 0);
-                TextSize = 14;
-                Text = CenterSkinGroup.ActiveWeapon or "None";
-                TextXAlignment = Enum.TextXAlignment.Left;
-                RichText = true;
-                ZIndex = 7;
-                Parent = DropdownInner;
-            })
-
-            local SubTabsContainer = Library:Create("Frame", {
-                BackgroundTransparency = 1;
-                Size = UDim2.new(1, 0, 0, 24);
-                ZIndex = 5;
-                Parent = Container;
-            })
-
-            local SubTabsList = Library:Create("UIListLayout", {
-                FillDirection = Enum.FillDirection.Horizontal;
-                SortOrder = Enum.SortOrder.LayoutOrder;
-                Padding = UDim.new(0, 6);
-                Parent = SubTabsContainer;
-            })
-
-            local ActiveCategoryName = nil
-            local Categories = {}
-
-            local ListOuter = Library:Create("Frame", {
-                BackgroundColor3 = Color3.new(0, 0, 0);
-                BorderColor3 = Color3.new(0, 0, 0);
-                ZIndex = 20;
-                Visible = false;
-                Parent = ScreenGui;
-            })
-
-            local function RecalculateListPosition()
-                ListOuter.Position = UDim2.fromOffset(DropdownOuter.AbsolutePosition.X, DropdownOuter.AbsolutePosition.Y + DropdownOuter.Size.Y.Offset + 1)
-            end
-
-            local function RecalculateListSize()
-                local Y = math.clamp(#WeaponNames * (20 * DPIScale), 0, 8 * (20 * DPIScale)) + 1
-                ListOuter.Size = UDim2.fromOffset(DropdownOuter.AbsoluteSize.X + 0.5, Y)
-            end
-
-            RecalculateListPosition()
-            RecalculateListSize()
-
-            DropdownOuter:GetPropertyChangedSignal("AbsolutePosition"):Connect(RecalculateListPosition)
-            DropdownOuter:GetPropertyChangedSignal("AbsoluteSize"):Connect(RecalculateListSize)
-
-            local ListInner = Library:Create("Frame", {
-                BackgroundColor3 = Library.MainColor;
-                BorderColor3 = Library.OutlineColor;
-                BorderMode = Enum.BorderMode.Inset;
-                BorderSizePixel = 0;
-                Size = UDim2.new(1, 0, 1, 0);
-                ZIndex = 21;
-                Parent = ListOuter;
-            })
-
-            Library:AddToRegistry(ListInner, {
-                BackgroundColor3 = "MainColor";
-                BorderColor3 = "OutlineColor";
-            })
-
             local Scrolling = Library:Create("ScrollingFrame", {
                 BackgroundTransparency = 1;
                 BorderSizePixel = 0;
                 CanvasSize = UDim2.new(0, 0, 0, 0);
-                Size = UDim2.new(1, 0, 1, 0);
-                ZIndex = 21;
-                Parent = ListInner;
-                ScrollBarThickness = 3,
-                ScrollBarImageColor3 = Library.AccentColor,
+                Size = UDim2.new(1, -10, 1, -10);
+                Position = UDim2.fromOffset(5, 5);
+                ZIndex = 7;
+                Parent = DropdownInner;
+                ScrollBarThickness = 4;
+                ScrollBarImageColor3 = Library.AccentColor;
+                ScrollingDirection = Enum.ScrollingDirection.Horizontal;
             })
 
             Library:AddToRegistry(Scrolling, {
                 ScrollBarImageColor3 = "AccentColor"
             })
 
-            Library:Create("UIListLayout", {
-                Padding = UDim.new(0, 0);
-                FillDirection = Enum.FillDirection.Vertical;
+            local Layout = Library:Create("UIListLayout", {
+                Padding = UDim.new(0, 6);
+                FillDirection = Enum.FillDirection.Horizontal;
                 SortOrder = Enum.SortOrder.LayoutOrder;
+                VerticalAlignment = Enum.VerticalAlignment.Center;
                 Parent = Scrolling;
             })
+
+            local WeaponButtons = {}
+            local ActiveCategoryName = nil
+            local Categories = {}
 
             local function UpdateCategoryVisibility()
                 for _, Cat in pairs(Categories) do
@@ -8734,93 +8710,137 @@ end
                 end
             end
 
-            local function BuildWeaponDropdownList()
-                for _, Element in next, Scrolling:GetChildren() do
-                    if not Element:IsA("UIListLayout") then
-                        Element:Destroy()
+            local function SelectWeapon(Value)
+                CenterSkinGroup.ActiveWeapon = Value
+                for Name, Btn in pairs(WeaponButtons) do
+                    if Name == Value then
+                        Btn.Outer.BorderColor3 = Library.AccentColor
+                    else
+                        Btn.Outer.BorderColor3 = Library.OutlineColor
                     end
                 end
 
-                local Count = 0
-                for _, Value in next, WeaponNames do
-                    Count = Count + 1
-
-                    local Button = Library:Create("TextButton", {
-                        AutoButtonColor = false,
-                        BackgroundColor3 = Library.MainColor;
-                        BorderColor3 = Library.OutlineColor;
-                        BorderMode = Enum.BorderMode.Middle;
-                        Size = UDim2.new(1, -1, 0, 20);
-                        Text = "";
-                        ZIndex = 23;
-                        Parent = Scrolling;
-                    })
-
-                    Library:AddToRegistry(Button, {
-                        BackgroundColor3 = "MainColor";
-                        BorderColor3 = "OutlineColor";
-                    })
-
-                    local ButtonLabel = Library:CreateLabel({
-                        Active = false;
-                        Size = UDim2.new(1, -6, 1, 0);
-                        Position = UDim2.new(0, 6, 0, 0);
-                        TextSize = 14;
-                        Text = Value;
-                        TextXAlignment = Enum.TextXAlignment.Left;
-                        RichText = true;
-                        ZIndex = 25;
-                        Parent = Button;
-                    })
-
-                    Library:OnHighlight(Button, Button,
-                        { BorderColor3 = "AccentColor", ZIndex = 24 },
-                        { BorderColor3 = "OutlineColor", ZIndex = 23 }
-                    )
-
-                    Button.MouseButton1Click:Connect(function()
-                        CenterSkinGroup.ActiveWeapon = Value
-                        DisplayLabel.Text = Value
-                        ListOuter.Visible = false
-                        DropdownArrow.Rotation = 0
-                        if ActiveCategoryName then
-                            local ActiveCat = CenterSkinGroup.Categories[ActiveCategoryName]
-                            if ActiveCat and ActiveCat.OnWeaponChanged then
-                                ActiveCat:OnWeaponChanged(Value)
-                            end
-                        end
+                if Info.OnWeaponChanged then
+                    task.spawn(function()
+                        pcall(Info.OnWeaponChanged, Value)
                     end)
                 end
 
-                Scrolling.CanvasSize = UDim2.fromOffset(0, (Count * (20 * DPIScale)) + 1)
+                if ActiveCategoryName then
+                    local ActiveCat = CenterSkinGroup.Categories[ActiveCategoryName]
+                    if ActiveCat and ActiveCat.OnWeaponChanged then
+                        ActiveCat:OnWeaponChanged(Value)
+                    end
+                end
             end
 
-            BuildWeaponDropdownList()
+            local function PopulateWeapons()
+                local Count = 0
+                for _, Value in ipairs(WeaponNames) do
+                    Count = Count + 1
+                    local WepData = Info.Weapon[Value]
+                    
+                    local WepBtnOuter = Library:Create("Frame", {
+                        BackgroundColor3 = Color3.new(0, 0, 0);
+                        BorderColor3 = Library.OutlineColor;
+                        Size = WepData.Size or UDim2.fromOffset(80, 80);
+                        ZIndex = 8;
+                        Parent = Scrolling;
+                    })
 
-            DropdownOuter.InputBegan:Connect(function(Input)
-                if (Input.UserInputType == Enum.UserInputType.MouseButton1 and not Library:MouseIsOverOpenedFrame()) or Input.UserInputType == Enum.UserInputType.Touch then
-                    if ListOuter.Visible then
-                        ListOuter.Visible = false
-                        DropdownArrow.Rotation = 0
-                    else
-                        RecalculateListPosition()
-                        RecalculateListSize()
-                        ListOuter.Visible = true
-                        DropdownArrow.Rotation = 180
-                    end
-                end
-            end)
+                    Library:AddToRegistry(WepBtnOuter, {
+                        BorderColor3 = "OutlineColor";
+                    })
 
-            InputService.InputBegan:Connect(function(Input)
-                if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
-                    local AbsPos, AbsSize = ListOuter.AbsolutePosition, ListOuter.AbsoluteSize
-                    if Mouse.X < AbsPos.X or Mouse.X > AbsPos.X + AbsSize.X
-                        or Mouse.Y < (AbsPos.Y - 24 - 1) or Mouse.Y > AbsPos.Y + AbsSize.Y then
-                        ListOuter.Visible = false
-                        DropdownArrow.Rotation = 0
+                    local WepBtnInner = Library:Create("Frame", {
+                        BackgroundColor3 = Library.BackgroundColor;
+                        BorderColor3 = Color3.new(0, 0, 0);
+                        Size = UDim2.new(1, -2, 1, -2);
+                        Position = UDim2.new(0, 1, 0, 1);
+                        ZIndex = 9;
+                        Parent = WepBtnOuter;
+                    })
+
+                    Library:AddToRegistry(WepBtnInner, {
+                        BackgroundColor3 = "BackgroundColor";
+                    })
+
+                    local WepPreview = WepData.Model or WepData.Image
+                    if WepPreview then
+                        if typeof(WepPreview) == "Instance" and (WepPreview:IsA("BasePart") or WepPreview:IsA("Model")) then
+                            -- ViewportFrame
+                            local vp = Library:Create("ViewportFrame", {
+                                BackgroundTransparency = 1;
+                                Size = UDim2.new(1, 0, 1, -14);
+                                Position = UDim2.new(0, 0, 0, 0);
+                                ZIndex = 10;
+                                Parent = WepBtnInner;
+                            })
+                            local cam = Instance.new("Camera")
+                            vp.CurrentCamera = cam
+                            cam.Parent = vp
+                            
+                            local Model = WepPreview:Clone()
+                            Model.Parent = vp
+                            
+                            local size = Model:IsA("Model") and select(2, Model:GetBoundingBox()) or Model.Size
+                            local maxExtent = math.max(size.X, size.Y, size.Z)
+                            local pos = Model:IsA("Model") and Model:GetPivot().Position or Model.Position
+                            
+                            local fov = WepData.CameraFOV or 70
+                            cam.FieldOfView = fov
+                            if WepData.CameraCFrame then
+                                cam.CFrame = WepData.CameraCFrame
+                            else
+                                local zoom = WepData.ZoomFactor or 2
+                                local offset = WepData.CameraOffset or Vector3.new(0, maxExtent / 2, maxExtent * zoom)
+                                cam.CFrame = CFrame.new(pos + offset, pos)
+                            end
+                        elseif typeof(WepPreview) == "string" then
+                            -- ImageLabel
+                            local img = Library:Create("ImageLabel", {
+                                BackgroundTransparency = 1;
+                                Size = UDim2.new(1, -6, 1, -20);
+                                Position = UDim2.new(0, 3, 0, 3);
+                                Image = WepPreview;
+                                ZIndex = 10;
+                                Parent = WepBtnInner;
+                            })
+                        end
                     end
+
+                    -- Text label at bottom
+                    local label = Library:CreateLabel({
+                        Size = UDim2.new(1, 0, 0, 12);
+                        Position = UDim2.new(0, 0, 1, -12);
+                        TextSize = WepData.TextSize or 10;
+                        Text = Value;
+                        TextXAlignment = Enum.TextXAlignment.Center;
+                        ZIndex = 11;
+                        Parent = WepBtnInner;
+                    })
+
+                    WepBtnInner.InputBegan:Connect(function(Input)
+                        if (Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch) then
+                            SelectWeapon(Value)
+                        end
+                    end)
+
+                    WeaponButtons[Value] = {
+                        Outer = WepBtnOuter,
+                        Inner = WepBtnInner
+                    }
                 end
-            end)
+                
+                Scrolling.CanvasSize = UDim2.new(0, Count * 86, 0, 0)
+            end
+
+            PopulateWeapons()
+            if CenterSkinGroup.ActiveWeapon then
+                task.spawn(function()
+                    SelectWeapon(CenterSkinGroup.ActiveWeapon)
+                end)
+            end
 
             function CenterSkinGroup:AddCategory(CatInfo)
                 local CatName = CatInfo.Name
@@ -8975,24 +8995,40 @@ end
                         BackgroundColor3 = "MainColor";
                     })
 
-                    local ViewportFrame = Library:Create("ViewportFrame", {
-                        BackgroundTransparency = 1;
-                        Size = UDim2.fromScale(1, 1);
-                        ZIndex = 8;
-                        Parent = ButtonInner;
-                    })
-
-                    local Camera = Instance.new("Camera")
-                    ViewportFrame.CurrentCamera = Camera
-                    Camera.Parent = ViewportFrame
-
                     if ItemInfo.Model then
+                        local ViewportFrame = Library:Create("ViewportFrame", {
+                            BackgroundTransparency = 1;
+                            Size = UDim2.fromScale(1, 1);
+                            ZIndex = 8;
+                            Parent = ButtonInner;
+                        })
+
+                        local Camera = Instance.new("Camera")
+                        ViewportFrame.CurrentCamera = Camera
+                        Camera.Parent = ViewportFrame
+
                         local Model = ItemInfo.Model:Clone()
                         Model.Parent = ViewportFrame
                         local size = Model:IsA("Model") and select(2, Model:GetBoundingBox()) or Model.Size
                         local maxExtent = math.max(size.X, size.Y, size.Z)
                         local pos = Model:IsA("Model") and Model:GetPivot().Position or Model.Position
-                        Camera.CFrame = CFrame.new(pos + Vector3.new(0, maxExtent / 2, maxExtent * 2), pos)
+                        
+                        Camera.FieldOfView = ItemInfo.CameraFOV or 70
+                        if ItemInfo.CameraCFrame then
+                            Camera.CFrame = ItemInfo.CameraCFrame
+                        else
+                            local zoom = ItemInfo.ZoomFactor or 2
+                            local offset = ItemInfo.CameraOffset or Vector3.new(0, maxExtent / 2, maxExtent * zoom)
+                            Camera.CFrame = CFrame.new(pos + offset, pos)
+                        end
+                    elseif ItemInfo.Image then
+                        local ImageLabel = Library:Create("ImageLabel", {
+                            BackgroundTransparency = 1;
+                            Size = UDim2.fromScale(1, 1);
+                            Image = ItemInfo.Image or "";
+                            ZIndex = 8;
+                            Parent = ButtonInner;
+                        })
                     end
 
                     local Label
@@ -9000,7 +9036,7 @@ end
                         Label = Library:CreateLabel({
                             Size = UDim2.new(1, 0, 0, 12);
                             Position = UDim2.new(0, 0, 1, -12);
-                            TextSize = 10;
+                            TextSize = ItemInfo.TextSize or 10;
                             Text = ItemInfo.Text;
                             TextXAlignment = Enum.TextXAlignment.Center;
                             ZIndex = 9;
@@ -9082,20 +9118,48 @@ end
                         BackgroundColor3 = "MainColor";
                     })
 
-                    local ImageLabel = Library:Create("ImageLabel", {
-                        BackgroundTransparency = 1;
-                        Size = UDim2.fromScale(1, 1);
-                        Image = ItemInfo.Image or "";
-                        ZIndex = 8;
-                        Parent = ButtonInner;
-                    })
+                    if ItemInfo.Model then
+                        local ViewportFrame = Library:Create("ViewportFrame", {
+                            BackgroundTransparency = 1;
+                            Size = UDim2.fromScale(1, 1);
+                            ZIndex = 8;
+                            Parent = ButtonInner;
+                        })
+
+                        local Camera = Instance.new("Camera")
+                        ViewportFrame.CurrentCamera = Camera
+                        Camera.Parent = ViewportFrame
+
+                        local Model = ItemInfo.Model:Clone()
+                        Model.Parent = ViewportFrame
+                        local size = Model:IsA("Model") and select(2, Model:GetBoundingBox()) or Model.Size
+                        local maxExtent = math.max(size.X, size.Y, size.Z)
+                        local pos = Model:IsA("Model") and Model:GetPivot().Position or Model.Position
+                        
+                        Camera.FieldOfView = ItemInfo.CameraFOV or 70
+                        if ItemInfo.CameraCFrame then
+                            Camera.CFrame = ItemInfo.CameraCFrame
+                        else
+                            local zoom = ItemInfo.ZoomFactor or 2
+                            local offset = ItemInfo.CameraOffset or Vector3.new(0, maxExtent / 2, maxExtent * zoom)
+                            Camera.CFrame = CFrame.new(pos + offset, pos)
+                        end
+                    elseif ItemInfo.Image then
+                        local ImageLabel = Library:Create("ImageLabel", {
+                            BackgroundTransparency = 1;
+                            Size = UDim2.fromScale(1, 1);
+                            Image = ItemInfo.Image or "";
+                            ZIndex = 8;
+                            Parent = ButtonInner;
+                        })
+                    end
 
                     local Label
                     if ItemInfo.Text then
                         Label = Library:CreateLabel({
                             Size = UDim2.new(1, 0, 0, 12);
                             Position = UDim2.new(0, 0, 1, -12);
-                            TextSize = 10;
+                            TextSize = ItemInfo.TextSize or 10;
                             Text = ItemInfo.Text;
                             TextXAlignment = Enum.TextXAlignment.Center;
                             ZIndex = 9;
