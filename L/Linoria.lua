@@ -1,4 +1,5 @@
 -- xynbol.wtf | dev | ui
+-- fix bugs
 local cloneref = (cloneref or clonereference or function(instance: any)
 	return instance
 end)
@@ -8685,7 +8686,7 @@ end
                 Parent = DropdownInner;
                 ScrollBarThickness = 4;
                 ScrollBarImageColor3 = Library.AccentColor;
-                ScrollingDirection = Enum.ScrollingDirection.Horizontal;
+                ScrollingDirection = Enum.ScrollingDirection.X;
             })
 
             Library:AddToRegistry(Scrolling, {
